@@ -1,0 +1,35 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>ENE4019 project1 web server</title>
+	</head>
+	<body>
+		<h1>2018008940 이재명</h1>
+		백준문제출력
+		<pre>
+		async function bojPrintProblemList(list){
+			if(!document.location.pathname.startsWith("/problem/")){
+				alert("아무 문제 페이지에서 실행해주세요!");
+				return;
+			}
+			const DP = new DOMParser();
+			const pageBody = document.querySelector(".container.content");
+			
+			if(null !== pageBody.querySelector(".row")){
+				//처음 실행하는 경우, 기존 문제 내용 삭제 및 2단 구성
+				document.title = "Baekjoon Online Judge";
+				pageBody.querySelector(".row").remove();
+				pageBody.style.columnCount=2;
+			}
+			for(const idx of list){
+				pageBody.appendChild(DP.parseFromString(await fetch(idx).then(x=>x.text()),"text/html").querySelector(".container.content .row"));
+			}
+			
+			//mathjax 적용
+			MathJax.typesetPromise();
+		}
+		
+		</pre>
+	</body>
+</html>
+//make 1kb......................
