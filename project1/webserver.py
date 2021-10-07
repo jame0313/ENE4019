@@ -17,7 +17,7 @@ sock.bind((HOST, PORT))
 #start listening
 sock.listen(0)
 
-print('tcpServer listen at: %s:%s\r\n' % sock.getsockname() )
+print('WebServer listen at: %s:%s' % sock.getsockname() )
 
 while True:
 

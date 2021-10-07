@@ -3,19 +3,29 @@ import os
 
 BUFFER = 4096
 ENCODING = 'UTF-8' #use as codec format
+#use for get response phrase
+RESPONSE_CODE_MAP = {200: "OK", 400: "Bad Request", 403: "Forbidden", 404: "Not Found"}
+HTTP_VERSION = "HTTP/1.1"
+CRLF = "\r\n"
+DEFAULT_HOMEPAGE = "index.html" #set your homepage file
 
+#get content type by extension
 def get_content_type(ex):
     if ex == '.jpg':
         return "image/jpeg"
-        ret += "Content-Type: " + "" + "\r\n"
     elif ex == '.html':
         return "text/html"
     else:
         return "application/octet-stream"
 
+#make response line given code number
+def make_response_line(code):
+    return HTTP_VERSION + ' ' + str(code) + ' ' + RESPONSE_CODE_MAP[code] + CRLF
+        
+
 #handle http requset
 def handle_request(client_sock, client_addr):
-    while True:
+    while True:    
         #get client's request in bytes format (max size: BUFFER)
         recv = client_sock.recv(BUFFER)
         
@@ -28,13 +38,16 @@ def handle_request(client_sock, client_addr):
         #decode request to string
         recv = recv.decode(ENCODING)
 
-        #get header info        
-        request_header = recv.split('\r\n')
+        #get header info
+        request_header = recv.split(CRLF)
         request_line = request_header[0]
         method, URL, version = request_line.split(' ')
+
+        #set default homepage
+        if URL == '/':
+            URL += DEFAULT_HOMEPAGE
         
         print('[Client %s:%s request]: %s' % (client_addr[0], client_addr[1], request_line))
-
         #implement GET method
         if method == 'GET':
             
@@ -44,14 +57,14 @@ def handle_request(client_sock, client_addr):
 
             #not server file case(forbidden)
             if basedir != os.path.commonpath((basedir, filepath)):
-                ret = "HTTP/1.1 403 Forbidden\r\n\r\n"
+                ret = make_response_line(403) + CRLF
                 client_sock.send(ret.encode(ENCODING))
                 break
             
             elif os.path.isfile(filepath):
                 #http 1.0 request case(bad request)
-                if version != 'HTTP/1.1':
-                    ret = "HTTP/1.1 400 Bad Request\r\n\r\n"
+                if version != HTTP_VERSION:
+                    ret = make_response_line(400) + CRLF
                     client_sock.send(ret.encode(ENCODING))
                     break
 
@@ -61,10 +74,11 @@ def handle_request(client_sock, client_addr):
                     siz = os.path.getsize(filepath) #size of file
                     
                     #make response header
-                    ret = "HTTP/1.1 200 OK\r\n" + "Connection: closed\r\n"
-                    ret += "Content-Type: " + get_content_type(ex) + "\r\n"
-                    ret += "Content-Length: " + str(siz) + "\r\n"
-                    ret += "\r\n"
+                    ret = make_response_line(200)
+                    ret += "Connection: closed" + CRLF
+                    ret += "Content-Type: " + get_content_type(ex) + CRLF
+                    ret += "Content-Length: " + str(siz) + CRLF
+                    ret += CRLF
                     
                     #encoding first before append entity body
                     ret = ret.encode(ENCODING) 
@@ -72,12 +86,12 @@ def handle_request(client_sock, client_addr):
                     #append entity body
                     with open(filepath, 'rb') as f:
                         ret += f.read()
-                        
                     client_sock.send(ret)
                     break
+                
             #can't find requested file(Not found)
             else:
-                ret = "HTTP/1.1 404 Not Found\r\n"
+                ret = make_response_line(404) + CRLF
                 client_sock.send(ret.encode(ENCODING))
                 break
     #close socket before return
