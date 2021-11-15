@@ -8,11 +8,7 @@ import tkinter
 ENCODING = 'UTF-8' #use as codec format
 MISSION_HEADER = "2018008940/JAEMYEONG LEE/WEBCLIENT/COMPUTERNETWORK"
 
-#GET /test/index.html
-#POST /test/result.html stuAnswer=1&sno1=2018008940
-#POST /test/postHandleTest
-#GET /test/366140.jpg
-
+#global var to keep img data
 TK_IMG = None
 
 #show data in window
@@ -63,14 +59,14 @@ def send_message(conn, message):
         print("Connection Failed")
         return False
 
+    print("Request Result:",response.status, response.reason)
     #show data
     return show_result(data)
 
 #handle url request to make message
 def handle_request(query):
-    
     print("Query:", query)
-    
+
     #split query
     query = query.strip().split(' ')
 
