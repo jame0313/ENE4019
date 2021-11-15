@@ -79,7 +79,8 @@ def handle_request(query):
     host = url.netloc
     
     if not host:
-        url = urlsplit("http://"+query[0])
+        #add url scheme
+        url = urlsplit("http://" + query[0])
         host = url.netloc
     
     print("HOST: ", host)
