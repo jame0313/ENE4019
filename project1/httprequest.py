@@ -94,6 +94,23 @@ def handle_request(client_sock, client_addr):
                 ret = make_response_line(404) + CRLF
                 client_sock.send(ret.encode(ENCODING))
                 break
+        elif method == 'POST':
+            #make response header
+            ex = os.path.splitext(URL)[1] #extension
+            pos_msg = "You posted " + URL + "\n"
+            ret = make_response_line(200)
+            ret += "Connection: closed" + CRLF
+            ret += "Content-Type: " + get_content_type(ex) + CRLF
+            ret += "Content-Length: " + str(len(pos_msg)) + CRLF
+            ret += CRLF
+            ret += pos_msg
+                    
+            #encoding first before append entity body
+            ret = ret.encode(ENCODING) 
+
+            client_sock.send(ret)
+            break
+            
     #close socket before return
     print('%s:%s disconnected' % client_addr)
     client_sock.close()
